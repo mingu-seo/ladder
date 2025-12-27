@@ -1,20 +1,149 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 🎲 EduLadder - 교육용 사다리 게임
 
-# Run and deploy your AI Studio app
+강의 환경에서 강사가 학생들의 자리 배치, 발표 순서, 실습 순서, 팀 배정 등을 **공정하고 직관적으로 결정**하기 위한 웹 기반 사다리 게임(Ghost Leg) 서비스입니다.
 
-This contains everything you need to run your app locally.
+## ✨ 핵심 가치
 
-View your app in AI Studio: https://ai.studio/apps/temp/2
+- **공정성**: 결과가 임의로 조작될 수 없음을 시각적으로 전달
+- **효율성**: 수업 흐름을 끊지 않고 빠르게 결과 도출
+- **직관성**: 별도 설명 없이 즉시 사용 가능
+- **몰입감**: 애니메이션과 캐릭터를 통한 참여도 향상
 
-## Run Locally
+## 🚀 시작하기
 
-**Prerequisites:**  Node.js
+### 사전 요구사항
 
+- Node.js 18 이상
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### 설치 및 실행
+
+```bash
+# 의존성 설치
+npm install
+
+# 개발 서버 실행 (http://localhost:3000)
+npm run dev
+
+# 프로덕션 빌드
+npm run build
+
+# 빌드 미리보기
+npm run preview
+```
+
+## 📋 주요 기능
+
+### 1. 참가자 설정
+- 참가자 수 입력 (1~30명)
+- 참가자별 이름 입력 (빈 값일 경우 자동 생성: 학생1, 학생2, ...)
+- 자동 캐릭터 할당 (30개 이모지)
+
+### 2. 결과 항목 설정
+- 참가자 수와 동일한 개수의 결과 항목 입력
+- 자유 텍스트 입력 가능
+
+### 3. 사다리 생성 및 실행
+- 사다리 구조 자동 생성
+- 랜덤 버튼으로 가로선만 재생성 (참가자/결과 순서는 유지)
+- 개별 클릭 또는 일괄 시작 가능
+
+### 4. 애니메이션
+- 각 참가자가 상단에서 시작하여 사다리를 따라 이동
+- 이동 경로를 컬러로 시각화
+- 모든 참가자의 이동 완료 후 결과 고정
+
+### 5. 결과 저장
+- 최종 결과 화면을 PNG 이미지로 저장
+- 참가자, 캐릭터, 사다리, 결과 모두 포함
+
+## 🏗️ 프로젝트 구조
+
+```
+ladder/
+├── components/
+│   ├── Header.tsx          # 헤더 및 네비게이션
+│   ├── SetupForm.tsx       # 참가자/결과 입력 폼
+│   └── LadderGame.tsx      # Canvas 기반 사다리 렌더링 및 애니메이션
+├── utils/
+│   └── ladderUtils.ts      # 사다리 생성 및 경로 계산 알고리즘
+├── App.tsx                 # 메인 앱 및 상태 관리
+├── types.ts                # TypeScript 타입 정의
+├── constants.ts            # 캐릭터, 색상, 레이아웃 설정
+├── index.tsx               # 엔트리 포인트
+└── docs/
+    └── ladder_game_prd.md  # 프로덕트 요구사항 문서
+```
+
+## 🎮 사용 방법
+
+1. **참가자 수 설정**: 참가자 수를 입력하면 이름/결과 입력란이 자동 생성됩니다.
+2. **이름 입력**: 각 참가자의 이름을 입력합니다 (선택사항).
+3. **결과 입력**: 각 결과 항목을 입력합니다 (예: 1번 자리, 2번 자리, ...).
+4. **사다리 페이지로 이동**: "사다리 페이지로" 버튼을 클릭합니다.
+5. **랜덤 생성** (선택): 사다리 구조를 다시 생성하려면 "사다리 랜덤 생성" 버튼을 클릭합니다.
+6. **실행**:
+   - 개별 시작: 각 캐릭터 카드를 클릭하여 한 명씩 출발
+   - 일괄 시작: "일괄 시작" 버튼으로 모두 동시 출발
+7. **결과 확인**: 애니메이션이 끝나면 각 참가자의 최종 결과를 확인합니다.
+8. **이미지 저장**: "이미지 저장" 버튼으로 결과를 PNG로 저장합니다.
+
+## 🛠️ 기술 스택
+
+- **Frontend**: React 19, TypeScript
+- **Build Tool**: Vite 6
+- **Rendering**: HTML5 Canvas API
+- **Styling**: Tailwind CSS (utility classes)
+- **State Management**: React Hooks (useState, useEffect, useCallback, useRef)
+
+## 🎯 주요 특징
+
+### 완전 클라이언트 사이드
+- 서버나 데이터베이스 없이 브라우저에서 모든 동작 수행
+- 외부 API 호출 없음
+
+### Canvas 기반 렌더링
+- 고성능 애니메이션을 위한 Canvas API 사용
+- requestAnimationFrame을 활용한 부드러운 60fps 애니메이션
+- High-DPI 디스플레이 지원
+
+### 상태 기반 흐름 제어
+- `INPUT` → `READY` → `ANIMATING` → `FINISHED` 상태 관리
+- 실행 후 새로고침 시 경고 표시
+- 단방향 플로우로 조작 방지
+
+### 알고리즘
+- 랜덤 가로선 생성 (인접 방지 로직 포함)
+- 사전 경로 계산으로 정확한 결과 보장
+- 참가자별 독립적인 애니메이션 진행
+
+## 📱 대상 사용자
+
+- **주 사용자**: 강사 (PC/프로젝터 화면 조작)
+- **결과 소비자**: 학생들 (대형 화면으로 결과 확인)
+
+## 🔒 제약 사항
+
+- 최대 참가자: 30명
+- 로그인/회원가입 없음
+- 결과 URL 공유 기능 없음
+- 브라우저 로컬 상태만 사용 (새로고침 시 데이터 초기화)
+
+## 📖 참고 문서
+
+- [PRD (프로덕트 요구사항 문서)](docs/ladder_game_prd.md)
+- [CLAUDE.md (개발 가이드)](CLAUDE.md)
+
+## 🎨 향후 확장 아이디어
+
+- 애니메이션 속도 조절
+- 캐릭터 테마 변경
+- 다크 모드
+- 모바일 최적화 강화
+
+## 📄 라이선스
+
+© Codro - withsky
+
+---
+
+**강의실에서 공정하고 재미있는 결정을 내려보세요!** 🎓✨
