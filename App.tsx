@@ -101,9 +101,9 @@ const App: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="flex w-full overflow-hidden animate-in zoom-in-95 duration-500">
+          <div className="flex flex-col md:flex-row w-full overflow-hidden animate-in zoom-in-95 duration-500">
             {/* 왼쪽 사다리 영역 */}
-            <div className="flex-1 flex flex-col overflow-hidden p-4 md:p-6 space-y-4">
+            <div className="flex-1 flex flex-col overflow-hidden p-4 md:p-6 space-y-4 min-h-[60vh] md:min-h-0">
               <div className="flex-1 overflow-hidden">
                 <LadderGame
                   participants={participants}
@@ -138,7 +138,7 @@ const App: React.FC = () => {
             </div>
 
             {/* 오른쪽 컨트롤 사이드바 */}
-            <div className="w-80 bg-white border-l border-slate-200 shadow-lg z-10 flex flex-col p-6 space-y-6">
+            <div className="w-full md:w-80 bg-white border-t md:border-t-0 md:border-l border-slate-200 shadow-lg z-10 flex flex-col p-6 space-y-6">
                 <div className="space-y-4">
                     <div className="flex flex-col gap-2">
                         <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-bold text-center ${
