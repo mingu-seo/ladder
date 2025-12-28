@@ -87,9 +87,9 @@ const App: React.FC = () => {
     <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
       <Header onHome={handleReset} />
 
-      <main className="flex-1 flex w-full overflow-hidden">
+      <main className="flex-1 flex w-full overflow-y-auto md:overflow-hidden">
         {status === 'INPUT' ? (
-          <div className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto">
+          <div className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <SetupForm
               participantCount={participantCount}
               setParticipantCount={setParticipantCount}
@@ -101,10 +101,10 @@ const App: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="flex flex-col md:flex-row w-full overflow-hidden animate-in zoom-in-95 duration-500">
+          <div className="flex flex-col md:flex-row w-full md:overflow-hidden animate-in zoom-in-95 duration-500">
             {/* 왼쪽 사다리 영역 */}
-            <div className="flex-1 flex flex-col overflow-hidden p-4 md:p-6 space-y-4 min-h-[60vh] md:min-h-0">
-              <div className="flex-1 overflow-hidden">
+            <div className="flex-1 flex flex-col p-4 md:p-6 space-y-4 md:overflow-hidden">
+              <div className="flex-1 overflow-hidden min-h-[700px] md:min-h-0">
                 <LadderGame
                   participants={participants}
                   results={results}
