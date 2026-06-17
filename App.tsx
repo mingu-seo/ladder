@@ -5,7 +5,7 @@ import SetupForm from './components/SetupForm';
 import LadderGame from './components/LadderGame';
 import { Participant, ResultItem, Bridge, GameStatus, PathStep } from './types';
 import { CHARACTERS, COLORS, MAX_PARTICIPANTS, MIN_PARTICIPANTS } from './constants';
-import { generateBridges, calculatePaths } from './utils/ladderUtils';
+import { generateShuffledLadder, getParticipantFinalColumns, getResultDisplayText, shuffleResults } from './utils/ladderUtils';
 
 const App: React.FC = () => {
   const [participantCount, setParticipantCount] = useState(5);
@@ -13,6 +13,7 @@ const App: React.FC = () => {
   const [results, setResults] = useState<ResultItem[]>([]);
   const [bridges, setBridges] = useState<Bridge[]>([]);
   const [paths, setPaths] = useState<PathStep[][]>([]);
+  const [ladderResults, setLadderResults] = useState<ResultItem[]>([]);
   const [status, setStatus] = useState<GameStatus>('INPUT');
 
   useEffect(() => {
@@ -33,23 +34,25 @@ const App: React.FC = () => {
     setParticipants(newParticipants);
     setResults(newResults);
     
-    const newBridges = generateBridges(participantCount);
-    const newPaths = calculatePaths(participantCount, newBridges);
+    const { bridges: newBridges, paths: newPaths } = generateShuffledLadder(participantCount);
     setBridges(newBridges);
     setPaths(newPaths);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [participantCount, status]);
 
-  const handleRandomize = () => {
-    const newBridges = generateBridges(participantCount);
-    const newPaths = calculatePaths(participantCount, newBridges);
+  const handleRandomize = useCallback((shouldShuffleResults = status !== 'INPUT') => {
+    const { bridges: newBridges, paths: newPaths } = generateShuffledLadder(participantCount);
     setBridges(newBridges);
     setPaths(newPaths);
-  };
+
+    if (shouldShuffleResults) {
+      setLadderResults(shuffleResults(results));
+    }
+  }, [participantCount, results, status]);
 
   const handleGoToLadder = () => {
+    handleRandomize(true);
     setStatus('READY');
-    handleRandomize();
   };
 
   const handleStartGame = () => {
@@ -83,6 +86,8 @@ const App: React.FC = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [status]);
 
+  const displayedResults = ladderResults.length === participantCount ? ladderResults : results;
+
   return (
     <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
       <Header onHome={handleReset} />
@@ -107,7 +112,7 @@ const App: React.FC = () => {
               <div className="flex-1 overflow-hidden min-h-[700px] md:min-h-0">
                 <LadderGame
                   participants={participants}
-                  results={results}
+                  results={displayedResults}
                   bridges={bridges}
                   paths={paths}
                   status={status}
@@ -119,9 +124,8 @@ const App: React.FC = () => {
                 <div className="h-48 overflow-x-auto pb-4">
                     <div className="flex gap-4 min-w-max">
                         {participants.map((p, i) => {
-                        const lastPathPoint = paths[i][paths[i].length - 1];
-                        const resultIdx = Math.round((lastPathPoint.x - (120/2)) / 120);
-                        const resultText = results[resultIdx]?.text || `결과 ${resultIdx + 1}`;
+                        const resultIdx = getParticipantFinalColumns(paths[i])[0];
+                        const resultText = getResultDisplayText(displayedResults[resultIdx], resultIdx);
                         
                         return (
                             <div key={p.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center gap-2 transform hover:scale-105 transition-all w-40 flex-shrink-0">
@@ -159,7 +163,7 @@ const App: React.FC = () => {
                             <>
                                 {status === 'READY' && (
                                     <button
-                                        onClick={handleRandomize}
+                                        onClick={() => handleRandomize(true)}
                                         className="w-full px-6 py-3 bg-white border border-slate-300 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg>

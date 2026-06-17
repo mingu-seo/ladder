@@ -2,6 +2,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Participant, ResultItem, Bridge, PathStep, GameStatus } from '../types';
 import { LADDER_CONFIG } from '../constants';
+import { getResultDisplayText } from '../utils/ladderUtils';
 
 interface LadderGameProps {
   participants: Participant[];
@@ -121,7 +122,7 @@ const LadderGame: React.FC<LadderGameProps> = ({
       ctx.font = 'bold 18px Pretendard';
       ctx.fillStyle = '#059669';
       ctx.textAlign = 'center';
-      ctx.fillText(r.text || `결과 ${i + 1}`, x, y + 8);
+      ctx.fillText(getResultDisplayText(r, i), x, y + 8);
     });
 
     // 5. 캐릭터 이동 경로 그리기

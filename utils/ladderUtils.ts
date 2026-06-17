@@ -1,8 +1,12 @@
 
-import { Participant, ResultItem, Bridge, PathStep } from '../types';
+import { ResultItem, Bridge, PathStep } from '../types';
 import { LADDER_CONFIG } from '../constants';
 
-export function generateBridges(count: number): Bridge[] {
+type RandomSource = () => number;
+
+const DEFAULT_SHUFFLE_ATTEMPTS = 40;
+
+export function generateBridges(count: number, rng: RandomSource = Math.random): Bridge[] {
   const bridges: Bridge[] = [];
   const { numRows, bridgeProbability } = LADDER_CONFIG;
 
@@ -11,7 +15,7 @@ export function generateBridges(count: number): Bridge[] {
       // Avoid adjacent horizontal lines at same level for simplicity
       const hasAdjacent = bridges.some(b => b.level === row && (b.fromCol === col - 1 || b.fromCol === col + 1));
       
-      if (!hasAdjacent && Math.random() < bridgeProbability) {
+      if (!hasAdjacent && rng() < bridgeProbability) {
         bridges.push({ fromCol: col, level: row });
       }
     }
@@ -56,8 +60,85 @@ export function calculatePaths(count: number, bridges: Bridge[]): PathStep[][] {
   return paths;
 }
 
+export function getParticipantFinalColumns(paths: PathStep[]): number[];
+export function getParticipantFinalColumns(paths: PathStep[][]): number[];
+export function getParticipantFinalColumns(paths: PathStep[] | PathStep[][]): number[] {
+  const { colWidth } = LADDER_CONFIG;
+  const normalizedPaths = Array.isArray(paths[0]) ? paths as PathStep[][] : [paths as PathStep[]];
+
+  return normalizedPaths.map((path) => {
+    const lastPoint = path[path.length - 1];
+    return Math.round((lastPoint.x - colWidth / 2) / colWidth);
+  });
+}
+
+function getTotalDisplacement(paths: PathStep[][]): number {
+  return getParticipantFinalColumns(paths).reduce((sum, finalCol, startCol) => sum + Math.abs(finalCol - startCol), 0);
+}
+
+export function generateShuffledLadder(
+  count: number,
+  rng: RandomSource = Math.random,
+  attempts = DEFAULT_SHUFFLE_ATTEMPTS
+): { bridges: Bridge[]; paths: PathStep[][]; resultOrder: number[] } {
+  if (count <= 1) {
+    const bridges: Bridge[] = [];
+    const paths = calculatePaths(count, bridges);
+    return { bridges, paths, resultOrder: getParticipantFinalColumns(paths) };
+  }
+
+  let bestBridges = generateBridges(count, rng);
+  let bestPaths = calculatePaths(count, bestBridges);
+  let bestScore = getTotalDisplacement(bestPaths);
+
+  for (let i = 1; i < attempts; i++) {
+    const candidateBridges = generateBridges(count, rng);
+    const candidatePaths = calculatePaths(count, candidateBridges);
+    const candidateScore = getTotalDisplacement(candidatePaths);
+
+    if (candidateScore > bestScore) {
+      bestBridges = candidateBridges;
+      bestPaths = candidatePaths;
+      bestScore = candidateScore;
+    }
+  }
+
+  return {
+    bridges: bestBridges,
+    paths: bestPaths,
+    resultOrder: getParticipantFinalColumns(bestPaths)
+  };
+}
+
+export function shuffleResults(results: ResultItem[], rng: RandomSource = Math.random): ResultItem[] {
+  const shuffled = [...results];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  const isSameOrder = shuffled.every((item, index) => item.id === results[index]?.id);
+  if (isSameOrder && shuffled.length > 1) {
+    const first = shuffled.shift();
+    if (first) shuffled.push(first);
+  }
+
+  return shuffled;
+}
+
+export function getResultDisplayText(result: ResultItem | undefined, fallbackIndex: number): string {
+  if (result?.text) return result.text;
+
+  const originalIndex = result?.id.match(/^r-(\d+)$/)?.[1];
+  if (originalIndex !== undefined) {
+    return `결과 ${Number(originalIndex) + 1}`;
+  }
+
+  return `결과 ${fallbackIndex + 1}`;
+}
+
 export function getFinalResultIndices(count: number, bridges: Bridge[]): number[] {
-    const results = new Array(count).fill(0).map((_, i) => i);
     const { numRows } = LADDER_CONFIG;
     
     let currentMapping = Array.from({ length: count }, (_, i) => i);
